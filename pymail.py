@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import imaplib, sys, email
 
@@ -30,7 +30,10 @@ class Pymail(object):
 
     def fetch(self, uid): pass
 
-    def search(self, query): pass
+    def search(self, *args):
+        """ Gets all messages from a given person """
+        resp, data = self.M.search(None, *args) 
+        return data
 
     def select(self, mailbox): pass
 
@@ -59,20 +62,43 @@ class Pymail(object):
     def get_message(self, uid):
         """ Get a single email message by uid """
         resp, data = self.M.fetch(uid, '(RFC822)')
-        return resp
+        return data
+
+    def unread_email(self):
+        """ Returns the number of unopened email messages """
+        return len(self.list_unread_email())
+
+    def list_unread_email(self):
+        messages = self.search('UnSeen')
+        return messages[0].split()
 
     def logout(self):
         self.M.logout()
 
-def main(mail):
+def mail_menu(mail):
+    print("\nHello. You have %d unread email messages\n" % mail.unread_email())
     print("What would you like to do?")
-    print("1: View all folders")
+    print("1: List unread email")
     print("2: Read a message")
+    print("3: List folders")
+    print("\n--------------------\nType 'q' or 'quit' to exit\n")
+
+def main(mail):
     try:
         while True:
-            cmd = raw_input('Enter command: ')
+            mail_menu(mail)
+            cmd = raw_input('Enter command: ').strip()
             if cmd == "1":
+                print(mail.list_unread_email())
+            elif cmd == "2": 
+                message_id = raw_input("Please enter message id: ")
+                print(mail.get_message(message_id))
+            elif cmd == "3":
                 print(mail.list_folders())
+            elif (cmd == "q") or (cmd == "quit"):
+                print("\nBye...")
+                break
+                sys.exit(0)
             else: main(mail)
     except KeyboardInterrupt:
         sys.exit(0)
@@ -80,14 +106,16 @@ def main(mail):
         sys.exit(1)
         
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
 
+    parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--username", help="User name")
     parser.add_argument("-p", "--password", help="Password")
 
     args = parser.parse_args()
    
     mail = Pymail()
+
     mail.login(args.username, args.password)
+    mail.select_folder() # select the inbox folder
     main(mail)
 
