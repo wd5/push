@@ -2,6 +2,7 @@
 
 A command line interface to Gmail.
 
+![](https://raw.github.com/owainlewis/pymail/master/preview.png)
 
 ## Use
 
