@@ -64,16 +64,22 @@ class Pymail(object):
     def logout(self):
         self.M.logout()
 
-def main():
-    print("What would you like to do?\n")
+
+
+def main(mail):
+    print("What would you like to do?")
+    print("1: View all folders")
+    print("2: Read a message")
     try:
         while True:
             cmd = raw_input('Enter command: ')
             if cmd == "1":
-                print "selected 1"
-            else: main()
+                print(mail.list_folders())
+            else: main(mail)
+    except KeyboardInterrupt:
+        sys.exit(0)
     except: 
-        Sys.exit(0)
+        sys.exit(1)
         
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -82,14 +88,10 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--password", help="Password")
 
     args = parser.parse_args()
-
-    main()
    
-    #p = Pymail()
-
-    #p.login(args.username, args.password)
-    #print(p.list_folders())
-    #p.logout()
+    mail = Pymail()
+    mail.login(args.username, args.password)
+    main(mail)
 
   
 
