@@ -1,4 +1,4 @@
-# Pymail
+# Push
 
 A command line interface to Gmail.
 
@@ -9,7 +9,7 @@ A command line interface to Gmail.
 From the terminal
 
 ```python
-python pymail.py -u yourname@gmail.com -p password
+python push.py -u yourname@gmail.com -p password
 
 ```
 
@@ -17,7 +17,7 @@ python pymail.py -u yourname@gmail.com -p password
 
 ```python
 
-p = Pymail()
+p = Push()
 
 p.login("user@gmail.com", "password")
 

@@ -7,7 +7,7 @@ import argparse
 class MailParser(object):
     pass
 
-class Pymail(object):
+class Push(object):
 
     def __init__(self):
         self.IMAP_SERVER='imap.gmail.com'
@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
    
-    mail = Pymail()
+    mail = Push()
 
     mail.login(args.username, args.password)
     mail.select_folder() # select the inbox folder
