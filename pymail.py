@@ -65,23 +65,31 @@ class Pymail(object):
         self.M.logout()
 
 def main():
-    p = Pymail()
-    p.login
-
+    print("What would you like to do?\n")
+    try:
+        while True:
+            cmd = raw_input('Enter command: ')
+            if cmd == "1":
+                print "selected 1"
+            else: main()
+    except: 
+        Sys.exit(0)
+        
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-u", "--username", help="User name")
     parser.add_argument("-p", "--password", help="Password")
 
     args = parser.parse_args()
-   
-    p = Pymail()
 
-    p.login(args.username, args.password)
-    print(p.list_folders())
-    p.logout()
+    main()
+   
+    #p = Pymail()
+
+    #p.login(args.username, args.password)
+    #print(p.list_folders())
+    #p.logout()
 
   
 
