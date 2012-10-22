@@ -4,8 +4,6 @@ import imaplib, sys, email
 
 import argparse
 
-all_mail = "[Gmail]/All Mail"
-
 class MailParser(object):
     pass
 
@@ -16,6 +14,7 @@ class Pymail(object):
         self.IMAP_PORT=993
         self.M = None
         self.response = None
+        self.all_mail = "[Gmail]/All Mail"
 
     def __str__(self):
         print "Python mail client"
