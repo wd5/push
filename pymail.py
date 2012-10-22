@@ -2,8 +2,8 @@
 
 import imaplib, sys, email
 
-user="you@gmail.com"
-password="password"
+import argparse
+
 all_mail = "[Gmail]/All Mail"
 
 class MailParser(object):
@@ -20,7 +20,7 @@ class Pymail(object):
     def __str__(self):
         print "Python mail client"
  
-    def login(self, username=user, password=pwd):
+    def login(self, username, password):
         self.M = imaplib.IMAP4_SSL(self.IMAP_SERVER, self.IMAP_PORT)
         resp, self.response = self.M.login(username, password)
         return resp
@@ -43,7 +43,7 @@ class Pymail(object):
 
     def message_body(self, uid):
         """ Extract the body text from an email message """
-        resp, data = self.M.fetch('1', '(BODY.PEEK[TEXT])')
+        resp, data = self.M.fetch(uid, '(BODY.PEEK[TEXT])')
         for response_part in data:
             if isinstance(response_part, tuple):
                 return response_part[1]
@@ -62,18 +62,27 @@ class Pymail(object):
         resp, data = self.M.fetch(uid, '(RFC822)')
         return resp
 
-    def list_mailboxes(self):
-        self.select_mailbox()
-        resp, data = self.M.search(None, 'ALL')
-        return resp
-        
     def logout(self):
         self.M.logout()
 
 def main():
-
-    pass
+    p = Pymail()
+    p.login
 
 if __name__ == '__main__':
 
-    main()
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-u", "--username", help="User name")
+    parser.add_argument("-p", "--password", help="Password")
+
+    args = parser.parse_args()
+   
+    p = Pymail()
+
+    p.login(args.username, args.password)
+    print(p.list_folders())
+    p.logout()
+
+  
+
