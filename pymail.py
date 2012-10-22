@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import imaplib, sys
+import imaplib, sys, email
 
 user="you@gmail.com"
 password="password"
@@ -22,12 +22,12 @@ class Pymail(object):
  
     def login(self, username=user, password=pwd):
         self.M = imaplib.IMAP4_SSL(self.IMAP_SERVER, self.IMAP_PORT)
-        status, self.response = self.M.login(username, password)
-        return status
+        resp, self.response = self.M.login(username, password)
+        return resp
 
     def list_folders(self):
-        response, folders = self.M.list()
-        return map((lambda x : x.split(" ")[2:]), folders)
+        resp, data = self.M.list()
+        return map((lambda x : x.split(" ")[2:]), data)
 
     def fetch(self, uid): pass
 
@@ -35,27 +35,44 @@ class Pymail(object):
 
     def select(self, mailbox): pass
 
+    def message_headers(self, uid):
+        resp, data = self.M.fetch(uid, '(BODY[HEADER])')
+        parser = email.HeaderParser()
+        msg = parser.parsestr(data[0][1])
+        return msg
+
+    def message_body(self, uid):
+        """ Extract the body text from an email message """
+        resp, data = self.M.fetch('1', '(BODY.PEEK[TEXT])')
+        for response_part in data:
+            if isinstance(response_part, tuple):
+                return response_part[1]
+
     def messages_from(self, person):
         """ Gets all messages from a given person """
-        response, message_ids = self.M.search(None, 'FROM', person) 
-        return message_ids
+        resp, data = self.M.search(None, 'FROM', person) 
+        return data
 
     def select_folder(self, folder="inbox"):
-        status, response = self.M.select(folder)
-        return status
+        resp, data = self.M.select(folder)
+        return resp
 
     def get_message(self, uid):
         """ Get a single email message by uid """
-        status, response = self.M.fetch(uid, '(RFC822)')
-        return response
+        resp, data = self.M.fetch(uid, '(RFC822)')
+        return resp
 
     def list_mailboxes(self):
         self.select_mailbox()
-        status, response = self.M.search(None, 'ALL')
-        return response
+        resp, data = self.M.search(None, 'ALL')
+        return resp
         
     def logout(self):
         self.M.logout()
+
+def main():
+
+    pass
 
 if __name__ == '__main__':
 
