@@ -64,8 +64,6 @@ class Pymail(object):
     def logout(self):
         self.M.logout()
 
-
-
 def main(mail):
     print("What would you like to do?")
     print("1: View all folders")
@@ -92,6 +90,4 @@ if __name__ == '__main__':
     mail = Pymail()
     mail.login(args.username, args.password)
     main(mail)
-
-  
 
