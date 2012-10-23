@@ -12,9 +12,9 @@
 #
 ##################################
 
-import imaplib, sys, email
-import argparse
-import itertools
+import imaplib, sys, email, datetime
+
+import argparse, itertools
 
 def color_string(text):
     blue = '\033[36m'
@@ -28,7 +28,7 @@ def autologin():
 
     """
     p = Push()
-    p.login(" ", " ")
+    p.login("", "")
     p.select_folder()
     return p
 
@@ -62,6 +62,7 @@ class MessageParser(object):
         elif maintype == 'text':
             return email_message_instance.get_payload()
 
+
 class Push(object):
 
     def __init__(self):
@@ -76,8 +77,12 @@ class Push(object):
  
     def login(self, username, password):
         self.M = imaplib.IMAP4_SSL(self.IMAP_SERVER, self.IMAP_PORT)
-        resp, self.response = self.M.login(username, password)
-        return resp
+        try:
+            response, self.response = self.M.login(username, password)
+            return response
+        except imaplib.IMAP4.error, err:
+            print(err)
+            sys.exit(1)
 
     def list_folders(self):
         resp, data = self.M.list()
@@ -89,6 +94,16 @@ class Push(object):
         """ Gets all messages from a given person """
         resp, data = self.M.search(None, *args) 
         return data
+
+    def search_today(self):
+        """ Find all messages sent/recieved today """
+        date = (datetime.date.today() - datetime.timedelta(1)).strftime("%d-%b-%Y")
+        resp, data = self.M.uid('search', None, '(SENTSINCE {date})'.format(date=date))
+        return self.as_list(data)
+
+    def count_emails_for_today(self):
+        """ Get the number of emails for today """
+        return len(self.search_today())
 
     def as_list(self, data):
         """ Returns message data as a list """
@@ -118,10 +133,15 @@ class Push(object):
         resp, data = self.M.select(folder)
         return resp
 
-    def get_message(self, uid):
-        """ Get a single email message by uid """
-        resp, data = self.M.fetch(uid, '(RFC822)')
+    def get_message(self, message_id):
+        """ Get a single email message by normal id """
+        resp, data = self.M.fetch(message_id, '(RFC822)')
         return data[0][1] # Returns the actual message string
+
+    def get_message_by_uid(self, uid):
+        """ Get a single email message by uid """
+        resp, data = self.M.uid('FETCH', str(uid), '(RFC822)')
+        return self.as_list(data)
 
     # Unread email
 
@@ -169,13 +189,29 @@ class Push(object):
     def logout(self):
         self.M.logout()
 
+
+# Methods for printing out data to the console 
+
+
 def mail_menu(mail):
     print(color_string("\nHello. You have %d unread email messages\n" % mail.unread_email()))
     print("What would you like to do?")
     print("1: List unread email")
     print("2: Read a message")
     print("3: List folders")
+    print("4: Show inbox")
     print("\n--------------------\nType 'q' or 'quit' to exit\n")
+
+def render_message(message_id):
+    message = mail.get_message(message_id)
+    parsed = MessageParser.parse(message)
+    print("\n------------------------\n")
+    print("To : %s" % (MessageParser.msg_to(parsed)))
+    print("From : %s" % (MessageParser.msg_from(parsed)))
+    print("\n")
+    print(MessageParser.msg_body(parsed))
+    print("\n------------------------\n")            
+
 
 def main(mail):
     try:
@@ -187,26 +223,24 @@ def main(mail):
             # Print out the email message in the terminal
             elif cmd == "2": 
                 message_id = raw_input("Please enter message id: ")
-                message = mail.get_message(message_id)
-                parsed = MessageParser.parse(message)
-                print("\n------------------------\n")
-                print("To : %s" % (MessageParser.msg_to(parsed)))
-                print("From : %s" % (MessageParser.msg_from(parsed)))
-                print("\n")
-                print(MessageParser.msg_body(parsed))
-                print("\n------------------------\n")            
+                render_message(message_id)
             elif cmd == "3":
                 print(mail.list_folders())
+            elif cmd == "4":
+                print("Inbox")
             elif (cmd == "q") or (cmd == "quit"):
                 print("\nBye...\n")
                 break
                 sys.exit(0)
             else: main(mail)
     except KeyboardInterrupt:
+        mail.logout()
         sys.exit(0)
     except: 
+        mail.logout()
         sys.exit(1)
-        
+      
+  
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
