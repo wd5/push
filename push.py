@@ -65,12 +65,13 @@ class MessageParser(object):
 
 class PushClient(object):
 
+    ALL_MAIL = "[Gmail]/All Mail"
+
     def __init__(self):
         self.IMAP_SERVER='imap.gmail.com'
         self.IMAP_PORT=993
         self.M = None
         self.response = None
-        self.all_mail = "[Gmail]/All Mail"
 
     def __str__(self):
         print "Python mail client"
