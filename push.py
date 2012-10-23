@@ -1,5 +1,17 @@
 #!/usr/bin/env python
 
+#################################
+#
+#  Push.py
+#
+#  A simple command line client for interacting with Gmail
+# 
+#  Example
+#  
+#  python push.py -u yourname@gmail.com -p password
+#
+##################################
+
 import imaplib, sys, email
 
 import argparse
