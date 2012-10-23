@@ -13,8 +13,13 @@
 ##################################
 
 import imaplib, sys, email
-
 import argparse
+import itertools
+
+def color_string(text):
+    blue = '\033[36m'
+    end  = '\033[0m'
+    return blue + text + end
 
 def autologin():
     """ 
@@ -23,7 +28,7 @@ def autologin():
 
     """
     p = Push()
-    p.login("", "")
+    p.login(" ", " ")
     p.select_folder()
     return p
 
@@ -85,6 +90,10 @@ class Push(object):
         resp, data = self.M.search(None, *args) 
         return data
 
+    def as_list(self, data):
+        """ Returns message data as a list """
+        return data[0].split()
+
     def select(self, mailbox): pass
 
     def message_headers(self, uid):
@@ -103,7 +112,7 @@ class Push(object):
     def messages_from(self, person):
         """ Gets all messages from a given person """
         resp, data = self.M.search(None, 'FROM', person) 
-        return data
+        return self.as_list(data)
 
     def select_folder(self, folder="inbox"):
         resp, data = self.M.select(folder)
@@ -122,7 +131,7 @@ class Push(object):
 
     def list_unread_email(self):
         messages = self.search('UnSeen')
-        return messages[0].split()
+        return self.as_list(messages)
 
     # Inbox
 
@@ -136,13 +145,32 @@ class Push(object):
         resp, data = self.M.search(None, "ALL")
         return data[0].split()[-1]
   
-    def all_mail(self, folder): pass
+    def all_uids(self, folder="inbox"):
+        """ Returns all uids from a folder """
+        self.select_folder(folder)
+        resp, data = self.M.uid('search', 'ALL')
+        return self.as_list(data)
+
+    def since(self, date_string):
+        """ Returns all messages recieved after a given date 
+            e.g self.since('01-Jan-2012') 
+        """
+        resp, data = self.M.uid('search', '(SINCE %s)' % date_string)
+        return self.as_list(data)
+
+    def inbox(self, limit=10):
+        """ Get messages info from inbox """
+        self.select_folder("inbox")
+        messages = self.all_uids()
+        rev  = itertools.islice(reversed(messages), 0, limit)
+        data = self.M.uid('FETCH', ','.join(map(str,rev)) , '(BODY.PEEK[HEADER.FIELDS (From Subject)] RFC822.SIZE)')
+        return data
 
     def logout(self):
         self.M.logout()
 
 def mail_menu(mail):
-    print("\nHello. You have %d unread email messages\n" % mail.unread_email())
+    print(color_string("\nHello. You have %d unread email messages\n" % mail.unread_email()))
     print("What would you like to do?")
     print("1: List unread email")
     print("2: Read a message")
