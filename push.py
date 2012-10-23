@@ -4,8 +4,41 @@ import imaplib, sys, email
 
 import argparse
 
-class MailParser(object):
-    pass
+def autologin():
+    """ 
+        Utility function used for testing that enables
+        a one line quick login
+
+    """
+    p = Push()
+    p.login("", "")
+    p.select_folder()
+    return p
+
+class MessageParser(object):
+
+    @staticmethod
+    def parse(message_string):
+        """ Parse an email message """
+        return email.message_from_string(message_string)
+
+    @staticmethod
+    def headers(email_message):
+        return email_message.items()
+
+    @staticmethod
+    def msg_from(message_string): pass
+
+    @staticmethod
+    def email_body(email_message_instance):
+        """ Gets the message body """
+        maintype = email_message_instance.get_content_maintype()
+        if maintype == 'multipart':
+            for part in email_message_instance.get_payload():
+                if part.get_content_maintype() == 'text':
+                    return part.get_payload()
+        elif maintype == 'text':
+            return email_message_instance.get_payload()
 
 class Push(object):
 
@@ -62,7 +95,9 @@ class Push(object):
     def get_message(self, uid):
         """ Get a single email message by uid """
         resp, data = self.M.fetch(uid, '(RFC822)')
-        return data
+        return data[0][1] # Returns the actual message string
+
+    # Unread email
 
     def unread_email(self):
         """ Returns the number of unopened email messages """
@@ -71,6 +106,20 @@ class Push(object):
     def list_unread_email(self):
         messages = self.search('UnSeen')
         return messages[0].split()
+
+    # Inbox
+
+    def all_uids(self):
+        """" Returns unique ids from the inbox """
+        resp, data = self.M.uid('search', None, "ALL") 
+        return data[0]
+
+    def last_message(self):
+        """ Returns the last email message id from the inbox """
+        resp, data = self.M.search(None, "ALL")
+        return data[0].split()[-1]
+  
+    def all_mail(self, folder): pass
 
     def logout(self):
         self.M.logout()
