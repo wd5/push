@@ -27,10 +27,15 @@ class MessageParser(object):
         return email_message.items()
 
     @staticmethod
-    def msg_from(message_string): pass
+    def msg_from(email_message_instance):
+        return email_message_instance['From']
 
     @staticmethod
-    def email_body(email_message_instance):
+    def msg_to(email_message_instance):
+        return email_message_instance['To']
+
+    @staticmethod
+    def msg_body(email_message_instance):
         """ Gets the message body """
         maintype = email_message_instance.get_content_maintype()
         if maintype == 'multipart':
@@ -139,13 +144,21 @@ def main(mail):
             cmd = raw_input('Enter command: ').strip()
             if cmd == "1":
                 print(mail.list_unread_email())
+            # Print out the email message in the terminal
             elif cmd == "2": 
                 message_id = raw_input("Please enter message id: ")
-                print(mail.get_message(message_id))
+                message = mail.get_message(message_id)
+                parsed = MessageParser.parse(message)
+                print("\n------------------------\n")
+                print("To : %s" % (MessageParser.msg_to(parsed)))
+                print("From : %s" % (MessageParser.msg_from(parsed)))
+                print("\n")
+                print(MessageParser.msg_body(parsed))
+                print("\n------------------------\n")            
             elif cmd == "3":
                 print(mail.list_folders())
             elif (cmd == "q") or (cmd == "quit"):
-                print("\nBye...")
+                print("\nBye...\n")
                 break
                 sys.exit(0)
             else: main(mail)
