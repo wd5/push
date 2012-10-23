@@ -63,7 +63,7 @@ class MessageParser(object):
             return email_message_instance.get_payload()
 
 
-class Push(object):
+class PushClient(object):
 
     def __init__(self):
         self.IMAP_SERVER='imap.gmail.com'
@@ -249,7 +249,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
    
-    mail = Push()
+    mail = PushClient()
 
     mail.login(args.username, args.password)
     mail.select_folder() # select the inbox folder
